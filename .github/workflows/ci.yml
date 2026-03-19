@@ -36,7 +36,7 @@ jobs:
         working-directory: apps/frontend
 
       - name: Lint
-        run: npm run lint --workspaces --if-present
+        run: npm run lint
 
       - name: Format check
         run: npm run format:check --workspaces --if-present

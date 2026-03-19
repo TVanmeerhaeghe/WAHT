@@ -11,7 +11,7 @@
     "dev": "docker compose up --watch",
     "build": "docker compose build",
     "down": "docker compose down",
-    "lint": "eslint .",
+    "lint": "eslint apps/",
     "format:check": "prettier --check ."
   },
   "devDependencies": {
@@ -22,5 +22,9 @@
   },
   "engines": {
     "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "eslint-plugin-vue": "^10.8.0",
+    "vue-eslint-parser": "^10.4.0"
   }
 }
