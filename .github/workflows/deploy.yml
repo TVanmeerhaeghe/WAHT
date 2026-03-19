@@ -33,7 +33,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          dockerfile: ./apps/backend/Dockerfile
+          file: ./apps/backend/Dockerfile
           push: true
           tags: ghcr.io/${{ env.REPO }}/backend:latest,ghcr.io/${{ env.REPO }}/backend:sha-${{ github.sha }}
           cache-from: type=gha
@@ -43,7 +43,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          dockerfile: ./apps/frontend/Dockerfile
+          file: ./apps/frontend/Dockerfile
           push: true
           tags: ghcr.io/${{ env.REPO }}/frontend:latest,ghcr.io/${{ env.REPO }}/frontend:sha-${{ github.sha }}
           cache-from: type=gha
@@ -53,7 +53,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          dockerfile: ./apps/worker/Dockerfile
+          file: ./apps/worker/Dockerfile
           push: true
           tags: ghcr.io/${{ env.REPO }}/worker:latest,ghcr.io/${{ env.REPO }}/worker:sha-${{ github.sha }}
           cache-from: type=gha

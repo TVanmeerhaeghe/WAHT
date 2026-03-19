@@ -62,7 +62,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          dockerfile: ./apps/backend/Dockerfile
+          file: ./apps/backend/Dockerfile
           push: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -71,7 +71,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          dockerfile: ./apps/frontend/Dockerfile
+          file: ./apps/frontend/Dockerfile
           push: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -80,7 +80,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          dockerfile: ./apps/worker/Dockerfile
+          file: ./apps/worker/Dockerfile
           push: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
