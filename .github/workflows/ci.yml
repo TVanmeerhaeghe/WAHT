@@ -50,11 +50,11 @@ jobs:
         run: npm ci
 
       - name: Install backend dependencies
-        run: npm ci
+        run: npm install
         working-directory: apps/backend
 
       - name: Install worker dependencies
-        run: npm ci
+        run: npm install
         working-directory: apps/worker
 
       - name: Type check backend
