@@ -16,6 +16,8 @@
   },
   "devDependencies": {
     "eslint": "^10.0.3",
-    "prettier": "^3.8.1"
+    "eslint-plugin-vue": "^10.8.0",
+    "prettier": "^3.8.1",
+    "vue-eslint-parser": "^10.4.0"
   }
 }
