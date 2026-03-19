@@ -1,0 +1,17 @@
+{
+  "name": "waht",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "docker compose up --watch",
+    "build": "docker compose build",
+    "down": "docker compose down"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
