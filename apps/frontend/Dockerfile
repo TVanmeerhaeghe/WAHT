@@ -9,7 +9,7 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY apps/frontend ./apps/frontend
 WORKDIR /app/apps/frontend
-RUN npm run build
+RUN /app/node_modules/.bin/nuxt build
 
 FROM node:22-alpine AS runner
 WORKDIR /app
