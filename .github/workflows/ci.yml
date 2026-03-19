@@ -20,7 +20,7 @@ jobs:
           node-version-file: '.nvmrc'
           cache: 'npm'
 
-      - name: Install dependencies
+      - name: Install root dependencies
         run: npm ci
 
       - name: Install frontend dependencies
@@ -46,19 +46,36 @@ jobs:
           node-version-file: '.nvmrc'
           cache: 'npm'
 
-      - name: Install dependencies
+      - name: Install root dependencies
         run: npm ci
 
       - name: Install frontend dependencies
         run: npm ci
         working-directory: apps/frontend
 
-      - name: Prepare Nuxt
+      - name: Install backend dependencies
+        run: npm ci
+        working-directory: apps/backend
+
+      - name: Install worker dependencies
+        run: npm ci
+        working-directory: apps/worker
+
+      - name: Prepare Nuxt types
         run: npx nuxt prepare
         working-directory: apps/frontend
 
-      - name: Type check
-        run: npm run typecheck --workspaces --if-present
+      - name: Type check backend
+        run: npx tsc --noEmit
+        working-directory: apps/backend
+
+      - name: Type check frontend
+        run: npx nuxt typecheck
+        working-directory: apps/frontend
+
+      - name: Type check worker
+        run: npx tsc --noEmit
+        working-directory: apps/worker
 
   docker:
     name: Docker Build
