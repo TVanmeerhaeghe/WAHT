@@ -17,11 +17,19 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4.4.0
         with:
-          node-version-file: '.nvmrc'
-          cache: 'npm'
+          node-version-file: ".nvmrc"
+          cache: "npm"
 
       - name: Install root dependencies
         run: npm ci
+
+      - name: Install backend dependencies
+        run: npm install
+        working-directory: apps/backend
+
+      - name: Install worker dependencies
+        run: npm install
+        working-directory: apps/worker
 
       - name: Install frontend dependencies
         run: npm ci
@@ -43,8 +51,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4.4.0
         with:
-          node-version-file: '.nvmrc'
-          cache: 'npm'
+          node-version-file: ".nvmrc"
+          cache: "npm"
 
       - name: Install root dependencies
         run: npm ci
