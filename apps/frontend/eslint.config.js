@@ -1,20 +1,20 @@
-import pluginVue from 'eslint-plugin-vue'
-import vueParser from 'vue-eslint-parser'
+import pluginVue from "eslint-plugin-vue";
+import vueParser from "vue-eslint-parser";
 
 export default [
   {
-    ignores: ['node_modules/**', '.nuxt/**', '.output/**']
+    ignores: ["node_modules/**", ".nuxt/**", ".output/**"],
   },
   {
-    files: ['**/*.vue'],
+    files: ["**/*.vue"],
     languageOptions: {
-      parser: vueParser
+      parser: vueParser,
     },
     plugins: { vue: pluginVue },
-    rules: {}
+    rules: {},
   },
   {
-    files: ['**/*.ts', '**/*.js'],
-    rules: {}
-  }
-]
+    files: ["**/*.ts", "**/*.js"],
+    rules: {},
+  },
+];

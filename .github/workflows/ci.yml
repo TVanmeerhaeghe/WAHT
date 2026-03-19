@@ -62,7 +62,7 @@ jobs:
         working-directory: apps/worker
 
       - name: Prepare Nuxt types
-        run: node_modules/.bin/nuxt prepare
+        run: npm exec nuxt prepare
         working-directory: apps/frontend
 
       - name: Type check backend
