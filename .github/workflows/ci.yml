@@ -35,6 +35,9 @@ jobs:
         run: npm ci
         working-directory: apps/frontend
 
+      - name: Debug node_modules
+        run: ls node_modules | grep typescript-eslint
+
       - name: Lint
         run: npm run lint
 
