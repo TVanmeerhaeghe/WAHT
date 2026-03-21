@@ -7,7 +7,7 @@ on:
     branches: [main, develop]
 
 jobs:
-    lint:
+  lint:
     name: Lint & Format
     runs-on: ubuntu-latest
     steps:
@@ -40,8 +40,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4.4.0
         with:
-          node-version-file: ".nvmrc"
-          cache: "npm"
+          node-version-file: '.nvmrc'
+          cache: 'npm'
 
       - name: Install root dependencies
         run: npm ci
