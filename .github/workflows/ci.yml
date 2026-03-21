@@ -7,7 +7,7 @@ on:
     branches: [main, develop]
 
 jobs:
-  lint:
+    lint:
     name: Lint & Format
     runs-on: ubuntu-latest
     steps:
@@ -17,29 +17,15 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4.4.0
         with:
-          node-version-file: ".nvmrc"
-          cache: "npm"
+          node-version-file: '.nvmrc'
+          cache: 'npm'
 
       - name: Install root dependencies
-        run: npm ci
-
-      - name: Install backend dependencies
-        run: npm install
-        working-directory: apps/backend
-
-      - name: Install worker dependencies
-        run: npm install
-        working-directory: apps/worker
+        run: npm install --include=dev
 
       - name: Install frontend dependencies
         run: npm ci
         working-directory: apps/frontend
-
-      - name: Debug node_modules
-        run: ls node_modules | grep typescript-eslint
-
-      - name: Lint
-        run: npm run lint
 
       - name: Format check
         run: npm run format:check --workspaces --if-present
