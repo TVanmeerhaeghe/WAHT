@@ -12,13 +12,24 @@
     "build": "docker compose build",
     "down": "docker compose down",
     "lint": "eslint apps/",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "prepare": "husky"
   },
   "devDependencies": {
     "eslint": "^9.0.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
     "prettier": "^3.0.0"
   },
   "engines": {
     "node": ">=20.0.0"
+  },
+  "lint-staged": {
+    "**/*.{ts,tsx,js,jsx,vue}": [
+      "prettier --write"
+    ],
+    "**/*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
   }
 }
