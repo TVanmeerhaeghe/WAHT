@@ -1,4 +1,4 @@
-import { Region } from "@prisma/client";
+import { Region } from "../types/index.js";
 
 const BLIZZARD_API_URLS: Record<Region, string> = {
   eu: "https://eu.api.blizzard.com",

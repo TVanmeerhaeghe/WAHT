@@ -1,5 +1,5 @@
 import { FastifyInstance } from "fastify";
-import { Region } from "@prisma/client";
+import { Region, REGIONS } from "../../types/index.js";
 import { fetchRealms, fetchAuctions } from "../../services/blizzard.js";
 
 // Routes debug — à supprimer avant la mise en production
@@ -9,7 +9,7 @@ export async function debugRoutes(app: FastifyInstance) {
     async (request, reply) => {
       const { region } = request.params;
 
-      if (!Object.values(Region).includes(region as Region)) {
+      if (!Object.values(REGIONS).includes(region as Region)) {
         return reply.status(400).send({ error: "Invalid region" });
       }
 
@@ -23,7 +23,7 @@ export async function debugRoutes(app: FastifyInstance) {
     async (request, reply) => {
       const { region, realmId } = request.params;
 
-      if (!Object.values(Region).includes(region as Region)) {
+      if (!Object.values(REGIONS).includes(region as Region)) {
         return reply.status(400).send({ error: "Invalid region" });
       }
 
