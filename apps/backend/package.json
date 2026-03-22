@@ -9,7 +9,11 @@
     "start": "node dist/index.js",
     "lint": "echo 'lint handled at root'",
     "format:check": "prettier --check src",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prisma:migrate": "prisma migrate dev --schema ./prisma",
+    "prisma:generate": "prisma generate --schema ./prisma",
+    "prisma:studio": "prisma studio --schema ./prisma",
+    "prisma:reset": "prisma migrate reset --schema ./prisma"
   },
   "devDependencies": {
     "@types/node": "^25.5.0",
@@ -26,6 +30,9 @@
     "@fastify/helmet": "^13.0.2",
     "@fastify/oauth2": "^8.2.0",
     "@fastify/session": "^11.1.1",
-    "fastify": "^5.8.2"
+    "@prisma/client": "^6.19.2",
+    "fastify": "^5.8.2",
+    "pino-pretty": "^13.0.0",
+    "prisma": "^6.19.2"
   }
 }

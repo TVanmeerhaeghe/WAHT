@@ -1,0 +1,13 @@
+model Realm {
+  id     Int    @id
+  slug   String @unique
+  name   String
+  region Region
+
+  snapshots AuctionSnapshot[]
+  auctions  RawAuction[]
+  alerts    Alert[]
+
+  @@index([region])
+  @@index([slug])
+}

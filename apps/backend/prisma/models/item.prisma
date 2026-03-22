@@ -1,0 +1,13 @@
+model Item {
+  id      Int         @id
+  name    String
+  quality ItemQuality
+  iconUrl String?
+
+  snapshots AuctionSnapshot[]
+  auctions  RawAuction[]
+  alerts    Alert[]
+
+  @@index([name])
+  @@index([quality])
+}

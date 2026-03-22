@@ -1,0 +1,19 @@
+enum Region {
+  eu
+  us
+  kr
+  tw
+}
+
+enum AlertCondition {
+  BELOW
+  ABOVE
+}
+
+enum ItemQuality {
+  COMMON
+  UNCOMMON
+  RARE
+  EPIC
+  LEGENDARY
+}

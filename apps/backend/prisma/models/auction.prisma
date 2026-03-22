@@ -1,0 +1,32 @@
+model AuctionSnapshot {
+  id         Int      @id @default(autoincrement())
+  itemId     Int
+  realmId    Int
+  minPrice   BigInt
+  maxPrice   BigInt
+  avgPrice   BigInt
+  quantity   Int
+  capturedAt DateTime @default(now())
+
+  item  Item  @relation(fields: [itemId], references: [id])
+  realm Realm @relation(fields: [realmId], references: [id])
+
+  @@index([itemId, realmId, capturedAt])
+  @@index([capturedAt])
+}
+
+model RawAuction {
+  id         BigInt   @id
+  itemId     Int
+  realmId    Int
+  price      BigInt
+  quantity   Int
+  capturedAt DateTime @default(now())
+
+  item  Item  @relation(fields: [itemId], references: [id])
+  realm Realm @relation(fields: [realmId], references: [id])
+
+  // purge automatique après 24h gérée par le worker
+  @@index([itemId, realmId])
+  @@index([capturedAt])
+}

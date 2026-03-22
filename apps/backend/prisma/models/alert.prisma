@@ -1,0 +1,18 @@
+model Alert {
+  id          Int            @id @default(autoincrement())
+  userId      Int
+  itemId      Int
+  realmId     Int?
+  targetPrice BigInt
+  condition   AlertCondition
+  active      Boolean        @default(true)
+  triggeredAt DateTime?
+  createdAt   DateTime       @default(now())
+
+  user  User  @relation(fields: [userId], references: [id])
+  item  Item  @relation(fields: [itemId], references: [id])
+  realm Realm? @relation(fields: [realmId], references: [id])
+
+  @@index([userId])
+  @@index([itemId, active])
+}
