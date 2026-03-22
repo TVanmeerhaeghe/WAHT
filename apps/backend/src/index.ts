@@ -2,6 +2,7 @@ import Fastify from "fastify";
 import { registerOauth2 } from "./plugins/oauth2.js";
 import { registerSession } from "./plugins/session.js";
 import { authRoutes } from "./routes/auth/index.js";
+import { debugRoutes } from "./routes/debug/index.js";
 
 const requiredEnvVars = [
   "BLIZZARD_CLIENT_ID",
@@ -29,6 +30,7 @@ const app = Fastify({
 await registerSession(app);
 await registerOauth2(app);
 await app.register(authRoutes);
+await app.register(debugRoutes);
 
 app.get("/health", async () => ({
   status: "ok",
