@@ -9,7 +9,7 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY apps/backend ./apps/backend
 WORKDIR /app/apps/backend
-RUN ./node_modules/.bin/prisma generate --schema ./prisma
+RUN /app/node_modules/.bin/prisma generate --schema ./prisma
 RUN npm run build --if-present
 
 FROM node:22-alpine AS runner
