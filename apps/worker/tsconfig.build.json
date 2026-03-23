@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@waht/shared": ["/app/packages/shared/dist/index.d.ts"],
+      "@waht/shared/*": ["/app/packages/shared/dist/*"]
+    }
+  }
+}

@@ -1,13 +1,10 @@
+import {
+  Region,
+  REGIONS,
+  BLIZZARD_API_URLS,
+  getClientToken,
+} from "@waht/shared";
 import { prisma } from "../lib/prisma.js";
-import { Region, REGIONS } from "../types/index.js";
-import { getClientToken } from "./blizzardAuth.js";
-
-const BLIZZARD_API_URLS: Record<Region, string> = {
-  eu: "https://eu.api.blizzard.com",
-  us: "https://us.api.blizzard.com",
-  kr: "https://kr.api.blizzard.com",
-  tw: "https://tw.api.blizzard.com",
-};
 
 interface ConnectedRealmRef {
   href: string;
@@ -15,10 +12,7 @@ interface ConnectedRealmRef {
 
 interface ConnectedRealmDetail {
   id: number;
-  realms: {
-    name: string;
-    slug: string;
-  }[];
+  realms: { name: string; slug: string }[];
 }
 
 async function fetchConnectedRealmDetail(
@@ -38,10 +32,9 @@ async function fetchConnectedRealmDetail(
 
 export async function syncRealms(region: Region): Promise<number> {
   const token = await getClientToken(region);
-  const baseUrl = BLIZZARD_API_URLS[region];
 
   const indexResponse = await fetch(
-    `${baseUrl}/data/wow/connected-realm/index?namespace=dynamic-${region}`,
+    `${BLIZZARD_API_URLS[region]}/data/wow/connected-realm/index?namespace=dynamic-${region}`,
     { headers: { Authorization: `Bearer ${token}` } },
   );
 

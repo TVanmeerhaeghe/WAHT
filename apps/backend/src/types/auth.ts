@@ -1,6 +1,7 @@
-export type Region = "eu" | "us" | "kr" | "tw";
+import type { Region } from "@waht/shared";
 
-export const REGIONS: Region[] = ["eu", "us", "kr", "tw"];
+export type { Region } from "@waht/shared";
+export { REGIONS } from "@waht/shared";
 
 export interface SessionUser {
   id: number;

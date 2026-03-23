@@ -1,8 +1,13 @@
+import cron from "node-cron";
+import { syncAllAuctions } from "./jobs/syncAuctions.js";
+
 console.log("WAHT Worker started");
 
-// Sync loop will be implemented in WAHT-8
-const run = async () => {
-  console.log("Worker running...");
-};
+// Sync toutes les heures — calé sur l'heure pile comme l'API Blizzard
+cron.schedule("0 * * * *", async () => {
+  console.log(`[${new Date().toISOString()}] Starting scheduled sync`);
+  await syncAllAuctions();
+});
 
-run();
+// Sync immédiate au démarrage pour ne pas attendre la première heure
+syncAllAuctions().catch(console.error);
