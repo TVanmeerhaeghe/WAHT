@@ -129,6 +129,12 @@ export async function syncRegionAuctions(region: Region): Promise<void> {
     try {
       const auctions = await fetchAuctionsForRealm(region, realm.id, token);
       await processAuctions(auctions, realm.id);
+
+      await prisma.realm.update({
+        where: { id: realm.id },
+        data: { lastSyncedAt: new Date() },
+      });
+
       console.log(`Synced ${auctions.length} auctions for realm ${realm.name}`);
     } catch (error) {
       console.error(`Failed to sync realm ${realm.name}:`, error);
