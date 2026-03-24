@@ -4,6 +4,7 @@ import { registerSession } from "./plugins/session.js";
 import { authRoutes } from "./routes/auth/index.js";
 import { debugRoutes } from "./routes/debug/index.js";
 import { realmsRoutes } from "./routes/realms/index.js";
+import { itemsRoutes } from "./routes/items/index.js";
 
 const requiredEnvVars = [
   "BLIZZARD_CLIENT_ID",
@@ -33,6 +34,7 @@ await registerOauth2(app);
 await app.register(authRoutes);
 await app.register(debugRoutes);
 await app.register(realmsRoutes);
+await app.register(itemsRoutes);
 
 app.get("/health", async () => ({
   status: "ok",
