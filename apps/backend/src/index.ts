@@ -5,6 +5,7 @@ import { authRoutes } from "./routes/auth/index.js";
 import { debugRoutes } from "./routes/debug/index.js";
 import { realmsRoutes } from "./routes/realms/index.js";
 import { itemsRoutes } from "./routes/items/index.js";
+import { itemPricesRoutes } from "./routes/items/prices.js";
 
 const requiredEnvVars = [
   "BLIZZARD_CLIENT_ID",
@@ -35,6 +36,7 @@ await app.register(authRoutes);
 await app.register(debugRoutes);
 await app.register(realmsRoutes);
 await app.register(itemsRoutes);
+await app.register(itemPricesRoutes);
 
 app.get("/health", async () => ({
   status: "ok",
