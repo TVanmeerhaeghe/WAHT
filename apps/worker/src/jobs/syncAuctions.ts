@@ -1,12 +1,13 @@
-import { PrismaClient } from "@prisma/client";
+import pLimit from "p-limit";
 import {
   Region,
   REGIONS,
   BLIZZARD_API_URLS,
   getClientToken,
 } from "@waht/shared";
+import { prisma } from "../lib/prisma.js";
 
-const prisma = new PrismaClient();
+const CONCURRENCY_LIMIT = 3;
 
 interface RawAuctionData {
   id: number;
@@ -38,23 +39,26 @@ async function fetchAuctionsForRealm(
 }
 
 async function ensureItemsExist(itemIds: number[]): Promise<void> {
-  // Upsert minimal des items — on crée un placeholder si l'item n'existe pas
-  // Les vraies données (nom, qualité, icône) seront enrichies plus tard
   const uniqueIds = [...new Set(itemIds)];
 
-  await Promise.all(
-    uniqueIds.map((id) =>
-      prisma.item.upsert({
-        where: { id },
-        update: {},
-        create: {
-          id,
-          name: `Item #${id}`,
-          quality: "COMMON",
-        },
-      }),
-    ),
-  );
+  const existing = await prisma.item.findMany({
+    where: { id: { in: uniqueIds } },
+    select: { id: true },
+  });
+
+  const existingIds = new Set(existing.map((i: { id: number }) => i.id));
+  const missingIds = uniqueIds.filter((id) => !existingIds.has(id));
+
+  if (missingIds.length === 0) return;
+
+  await prisma.item.createMany({
+    data: missingIds.map((id) => ({
+      id,
+      name: `Item #${id}`,
+      quality: "COMMON",
+    })),
+    skipDuplicates: true,
+  });
 }
 
 async function processAuctions(
@@ -63,29 +67,33 @@ async function processAuctions(
 ): Promise<void> {
   if (auctions.length === 0) return;
 
-  // On s'assure que tous les items existent avant d'insérer les auctions
   const itemIds = auctions.map((a) => a.item.id);
   await ensureItemsExist(itemIds);
 
-  await prisma.$transaction(
-    auctions.map((auction) =>
-      prisma.rawAuction.upsert({
-        where: { id: BigInt(auction.id) },
-        update: {
-          price: BigInt(auction.buyout ?? auction.unit_price ?? 0),
-          quantity: auction.quantity,
-          capturedAt: new Date(),
-        },
-        create: {
-          id: BigInt(auction.id),
-          itemId: auction.item.id,
-          realmId,
-          price: BigInt(auction.buyout ?? auction.unit_price ?? 0),
-          quantity: auction.quantity,
-        },
-      }),
-    ),
-  );
+  const CHUNK_SIZE = 500;
+  for (let i = 0; i < auctions.length; i += CHUNK_SIZE) {
+    const chunk = auctions.slice(i, i + CHUNK_SIZE);
+
+    await prisma.$transaction(
+      chunk.map((auction) =>
+        prisma.rawAuction.upsert({
+          where: { id: BigInt(auction.id) },
+          update: {
+            price: BigInt(auction.buyout ?? auction.unit_price ?? 0),
+            quantity: auction.quantity,
+            capturedAt: new Date(),
+          },
+          create: {
+            id: BigInt(auction.id),
+            itemId: auction.item.id,
+            realmId,
+            price: BigInt(auction.buyout ?? auction.unit_price ?? 0),
+            quantity: auction.quantity,
+          },
+        }),
+      ),
+    );
+  }
 
   const itemGroups = auctions.reduce(
     (acc, auction) => {
@@ -114,6 +122,25 @@ async function processAuctions(
   await prisma.auctionSnapshot.createMany({ data: snapshots });
 }
 
+async function syncRealm(
+  region: Region,
+  realmId: number,
+  realmName: string,
+  token: string,
+): Promise<void> {
+  const auctions = await fetchAuctionsForRealm(region, realmId, token);
+
+  await new Promise((resolve) => setTimeout(resolve, 200));
+
+  await processAuctions(auctions, realmId);
+  await prisma.realm.update({
+    where: { id: realmId },
+    data: { lastSyncedAt: new Date() },
+  });
+
+  console.log(`Synced ${auctions.length} auctions for realm ${realmName}`);
+}
+
 export async function syncRegionAuctions(region: Region): Promise<void> {
   const realms = await prisma.realm.findMany({ where: { region } });
 
@@ -123,23 +150,21 @@ export async function syncRegionAuctions(region: Region): Promise<void> {
   }
 
   const token = await getClientToken(region);
-  console.log(`Syncing ${realms.length} realms for ${region}`);
+  const limit = pLimit(CONCURRENCY_LIMIT);
 
-  for (const realm of realms) {
-    try {
-      const auctions = await fetchAuctionsForRealm(region, realm.id, token);
-      await processAuctions(auctions, realm.id);
+  console.log(
+    `Syncing ${realms.length} realms for ${region} (concurrency: ${CONCURRENCY_LIMIT})`,
+  );
 
-      await prisma.realm.update({
-        where: { id: realm.id },
-        data: { lastSyncedAt: new Date() },
-      });
-
-      console.log(`Synced ${auctions.length} auctions for realm ${realm.name}`);
-    } catch (error) {
-      console.error(`Failed to sync realm ${realm.name}:`, error);
-    }
-  }
+  await Promise.all(
+    realms.map((realm: { id: number; name: string }) =>
+      limit(() =>
+        syncRealm(region, realm.id, realm.name, token).catch((error) =>
+          console.error(`Failed to sync realm ${realm.name}:`, error),
+        ),
+      ),
+    ),
+  );
 }
 
 export async function syncAllAuctions(): Promise<void> {
