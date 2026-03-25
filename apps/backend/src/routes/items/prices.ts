@@ -10,6 +10,15 @@ const PERIODS: Record<string, number> = {
   "90d": 90,
 };
 
+type SnapshotResult = {
+  minPrice: bigint;
+  maxPrice: bigint;
+  avgPrice: bigint;
+  quantity: number;
+  capturedAt: Date;
+  realm: { name: string; slug: string };
+};
+
 export async function itemPricesRoutes(app: FastifyInstance) {
   app.get<{
     Params: { id: string };
@@ -84,7 +93,7 @@ export async function itemPricesRoutes(app: FastifyInstance) {
       itemId,
       period,
       realm: realmSlug ?? "all",
-      snapshots: snapshots.map((s) => ({
+      snapshots: snapshots.map((s: SnapshotResult) => ({
         minPrice: Number(s.minPrice),
         maxPrice: Number(s.maxPrice),
         avgPrice: Number(s.avgPrice),
