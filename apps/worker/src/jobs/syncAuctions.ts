@@ -4,8 +4,10 @@ import {
   REGIONS,
   BLIZZARD_API_URLS,
   getClientToken,
+  checkRateLimit,
 } from "@waht/shared";
 import { prisma } from "../lib/prisma.js";
+import { redis } from "../lib/redis.js";
 
 const CONCURRENCY_LIMIT = 3;
 
@@ -23,6 +25,11 @@ async function fetchAuctionsForRealm(
   realmId: number,
   token: string,
 ): Promise<RawAuctionData[]> {
+  const allowed = await checkRateLimit(redis);
+  if (!allowed) {
+    throw new Error(`Rate limit reached, skipping realm ${realmId}`);
+  }
+
   const response = await fetch(
     `${BLIZZARD_API_URLS[region]}/data/wow/connected-realm/${realmId}/auctions?namespace=dynamic-${region}&locale=en_US`,
     { headers: { Authorization: `Bearer ${token}` } },
