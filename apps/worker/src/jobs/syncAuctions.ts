@@ -5,6 +5,7 @@ import {
   BLIZZARD_API_URLS,
   getClientToken,
   checkRateLimit,
+  withRetry,
 } from "@waht/shared";
 import { prisma } from "../lib/prisma.js";
 import { redis } from "../lib/redis.js";
@@ -30,18 +31,22 @@ async function fetchAuctionsForRealm(
     throw new Error(`Rate limit reached, skipping realm ${realmId}`);
   }
 
-  const response = await fetch(
-    `${BLIZZARD_API_URLS[region]}/data/wow/connected-realm/${realmId}/auctions?namespace=dynamic-${region}&locale=en_US`,
-    { headers: { Authorization: `Bearer ${token}` } },
+  const data = await withRetry(
+    async () => {
+      const response = await fetch(
+        `${BLIZZARD_API_URLS[region]}/data/wow/connected-realm/${realmId}/auctions?namespace=dynamic-${region}&locale=en_US`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      if (!response.ok) {
+        throw new Error(
+          `Blizzard API error ${response.status} for realm ${realmId}`,
+        );
+      }
+      return response.json() as Promise<{ auctions: RawAuctionData[] }>;
+    },
+    { maxAttempts: 3, baseDelayMs: 2000 },
   );
 
-  if (!response.ok) {
-    throw new Error(
-      `Blizzard API error ${response.status} for realm ${realmId}`,
-    );
-  }
-
-  const data = (await response.json()) as { auctions: RawAuctionData[] };
   return data.auctions ?? [];
 }
 
@@ -136,10 +141,9 @@ async function syncRealm(
   token: string,
 ): Promise<void> {
   const auctions = await fetchAuctionsForRealm(region, realmId, token);
-
   await new Promise((resolve) => setTimeout(resolve, 200));
-
   await processAuctions(auctions, realmId);
+
   await prisma.realm.update({
     where: { id: realmId },
     data: { lastSyncedAt: new Date() },
