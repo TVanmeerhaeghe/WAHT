@@ -2,6 +2,7 @@ import { FastifyInstance } from "fastify";
 import { Region, REGIONS } from "../../types/index.js";
 import { fetchRealms, fetchAuctions } from "../../services/blizzard.js";
 import { syncAllRegions } from "../../services/realms.js";
+import { redis } from "../../lib/redis.js";
 
 // Routes debug — à supprimer avant la mise en production
 export async function debugRoutes(app: FastifyInstance) {
@@ -36,5 +37,11 @@ export async function debugRoutes(app: FastifyInstance) {
   app.post("/debug/sync-realms", async (request, reply) => {
     const results = await syncAllRegions();
     return reply.send({ success: true, results });
+  });
+
+  app.get("/debug/rate-limit", async (request, reply) => {
+    const { getRateLimitStatus } = await import("@waht/shared");
+    const status = await getRateLimitStatus(redis);
+    return reply.send(status);
   });
 }

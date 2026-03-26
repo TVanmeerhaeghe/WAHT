@@ -1,6 +1,12 @@
 import { prisma } from "../lib/prisma.js";
 import { redis } from "../lib/redis.js";
-import { Region, BLIZZARD_API_URLS, getClientToken } from "@waht/shared";
+import {
+  Region,
+  BLIZZARD_API_URLS,
+  getClientToken,
+  checkRateLimit,
+  withRetry,
+} from "@waht/shared";
 
 const ON_DEMAND_SYNC_TTL = 60 * 5;
 
@@ -41,28 +47,34 @@ export async function syncRealmOnDemand(
 ): Promise<boolean> {
   const lockKey = `sync:lock:${realmId}`;
 
-  // Vérifie si une sync récente existe déjà
+  const allowed = await checkRateLimit(redis);
+  if (!allowed) {
+    throw new Error("Blizzard API rate limit reached");
+  }
+
   const locked = await redis.get(lockKey);
   if (locked) return false;
 
-  // Pose le verrou pour éviter les syncs simultanées
   await redis.set(lockKey, "1", "EX", ON_DEMAND_SYNC_TTL);
 
   try {
     const token = await getClientToken(region);
 
-    const response = await fetch(
-      `${BLIZZARD_API_URLS[region]}/data/wow/connected-realm/${realmId}/auctions?namespace=dynamic-${region}&locale=en_US`,
-      { headers: { Authorization: `Bearer ${token}` } },
+    const data = await withRetry(
+      async () => {
+        const response = await fetch(
+          `${BLIZZARD_API_URLS[region]}/data/wow/connected-realm/${realmId}/auctions?namespace=dynamic-${region}&locale=en_US`,
+          { headers: { Authorization: `Bearer ${token}` } },
+        );
+        if (!response.ok) {
+          throw new Error(`Blizzard API error: ${response.status}`);
+        }
+        return response.json() as Promise<{ auctions: RawAuctionData[] }>;
+      },
+      { maxAttempts: 3, baseDelayMs: 2000 },
     );
 
-    if (!response.ok) {
-      throw new Error(`Blizzard API error: ${response.status}`);
-    }
-
-    const data = (await response.json()) as { auctions: RawAuctionData[] };
     const auctions = data.auctions ?? [];
-
     if (auctions.length === 0) return true;
 
     const itemIds = auctions.map((a) => a.item.id);
@@ -100,7 +112,6 @@ export async function syncRealmOnDemand(
 
     return true;
   } catch (error) {
-    // En cas d'erreur on libère le verrou pour permettre un retry
     await redis.del(lockKey);
     throw error;
   }
