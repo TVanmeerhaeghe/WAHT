@@ -44,4 +44,19 @@ export async function debugRoutes(app: FastifyInstance) {
     const status = await getRateLimitStatus(redis);
     return reply.send(status);
   });
+
+  app.get<{ Params: { id: string } }>(
+    "/debug/item/:id",
+    async (request, reply) => {
+      const { getClientToken, BLIZZARD_API_URLS } =
+        await import("@waht/shared");
+      const token = await getClientToken("eu");
+      const response = await fetch(
+        `${BLIZZARD_API_URLS["eu"]}/data/wow/item/${request.params.id}?namespace=static-eu&locale=en_US`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      const data = await response.json();
+      return reply.send({ status: response.status, data });
+    },
+  );
 }
