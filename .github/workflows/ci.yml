@@ -119,6 +119,10 @@ jobs:
       - name: Install root dependencies
         run: npm ci
 
+      - name: Install and build shared package
+        run: npm install && npm run build
+        working-directory: packages/shared
+
       - name: Install backend dependencies
         run: npm install
         working-directory: apps/backend
