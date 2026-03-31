@@ -11,6 +11,7 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
+    "types": ["vitest/globals"],
     "paths": {
       "@waht/shared": ["../../packages/shared/dist/index.d.ts"]
     }
