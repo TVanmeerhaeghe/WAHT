@@ -24,9 +24,16 @@ export async function authRoutes(app: FastifyInstance) {
       const typedRegion = region as Region;
 
       try {
-        const oauthPlugin = (app as any)[
-          `blizzardOauth2${typedRegion.toUpperCase()}`
-        ];
+        const oauthPlugin = (
+          app as unknown as Record<
+            string,
+            {
+              getAccessTokenFromAuthorizationCodeFlow: (
+                req: unknown,
+              ) => Promise<{ token: { access_token: string } }>;
+            }
+          >
+        )[`blizzardOauth2${typedRegion.toUpperCase()}`];
         const tokenResponse =
           await oauthPlugin.getAccessTokenFromAuthorizationCodeFlow(request);
         const accessToken = tokenResponse.token.access_token;
