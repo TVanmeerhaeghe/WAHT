@@ -20,9 +20,6 @@ jobs:
           node-version-file: ".nvmrc"
           cache: "npm"
 
-      - name: Debug node_modules
-        run: ls node_modules | grep typescript
-
       - name: Install root dependencies
         run: npm ci
 
