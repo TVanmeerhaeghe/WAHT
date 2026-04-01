@@ -55,7 +55,7 @@ async function ensureItemsExist(itemIds: number[]): Promise<void> {
 
   const existing = await prisma.item.findMany({
     where: { id: { in: uniqueIds } },
-    select: { id: true },
+    select: { id: true, name: true, connectedRealms: true },
   });
 
   const existingIds = new Set(existing.map((i: { id: number }) => i.id));
@@ -138,6 +138,7 @@ async function syncRealm(
   region: Region,
   realmId: number,
   realmName: string,
+  connectedRealms: string[],
   token: string,
 ): Promise<void> {
   const auctions = await fetchAuctionsForRealm(region, realmId, token);
@@ -149,7 +150,9 @@ async function syncRealm(
     data: { lastSyncedAt: new Date() },
   });
 
-  console.log(`Synced ${auctions.length} auctions for realm ${realmName}`);
+  console.log(
+    `Synced ${auctions.length} auctions for realm ${realmName} [${connectedRealms?.join(" + ") ?? realmName}]`,
+  );
 }
 
 export async function syncRegionAuctions(region: Region): Promise<void> {
@@ -168,12 +171,19 @@ export async function syncRegionAuctions(region: Region): Promise<void> {
   );
 
   await Promise.all(
-    realms.map((realm: { id: number; name: string }) =>
-      limit(() =>
-        syncRealm(region, realm.id, realm.name, token).catch((error) =>
-          console.error(`Failed to sync realm ${realm.name}:`, error),
+    realms.map(
+      (realm: { id: number; name: string; connectedRealms: string[] }) =>
+        limit(() =>
+          syncRealm(
+            region,
+            realm.id,
+            realm.name,
+            realm.connectedRealms,
+            token,
+          ).catch((error) =>
+            console.error(`Failed to sync realm ${realm.name}:`, error),
+          ),
         ),
-      ),
     ),
   );
 }
