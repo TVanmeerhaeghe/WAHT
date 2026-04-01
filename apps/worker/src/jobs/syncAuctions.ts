@@ -53,7 +53,7 @@ async function fetchAuctionsForRealm(
 async function ensureItemsExist(itemIds: number[]): Promise<void> {
   const uniqueIds = [...new Set(itemIds)];
 
-  const existing = await prisma.item.findMany({
+  const existing = await prisma.realm.findMany({
     where: { id: { in: uniqueIds } },
     select: { id: true, name: true, connectedRealms: true },
   });
