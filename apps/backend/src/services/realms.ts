@@ -58,14 +58,23 @@ export async function syncRealms(region: Region): Promise<number> {
 
       await prisma.realm.upsert({
         where: { id: detail.id },
-        update: { name: mainRealm.name, slug: mainRealm.slug, region },
+        update: {
+          name: mainRealm.name,
+          slug: mainRealm.slug,
+          region,
+          connectedRealms: detail.realms.map((r) => r.name),
+        },
         create: {
           id: detail.id,
           name: mainRealm.name,
           slug: mainRealm.slug,
           region,
+          connectedRealms: detail.realms.map((r) => r.name),
         },
       });
+
+      const realmNames = detail.realms.map((r) => r.name).join(" + ");
+      console.log(`Synced Connected Realm ${detail.id}: ${realmNames}`);
 
       synced++;
     } catch (error) {

@@ -1,9 +1,10 @@
 model Realm {
-  id           Int       @id
-  slug         String    @unique
-  name         String
-  region       Region
-  lastSyncedAt DateTime?
+  id              Int       @id
+  slug            String    @unique
+  name            String
+  region          Region
+  connectedRealms String[]
+  lastSyncedAt    DateTime?
 
   snapshots AuctionSnapshot[]
   auctions  RawAuction[]
