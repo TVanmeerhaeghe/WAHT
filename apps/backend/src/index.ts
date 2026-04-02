@@ -1,4 +1,5 @@
 import Fastify from "fastify";
+import cors from "@fastify/cors";
 import { registerOauth2 } from "./plugins/oauth2.js";
 import { registerSession } from "./plugins/session.js";
 import { authRoutes } from "./routes/auth/index.js";
@@ -29,6 +30,11 @@ const app = Fastify({
         ? { target: "pino-pretty" }
         : undefined,
   },
+});
+
+await app.register(cors, {
+  origin: ["http://localhost:3000", "http://localhost:3001"],
+  credentials: true,
 });
 
 await registerSession(app);
