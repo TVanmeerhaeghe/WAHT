@@ -3,6 +3,7 @@ import { Region, REGIONS } from "../../types/index.js";
 import { fetchRealms, fetchAuctions } from "../../services/blizzard.js";
 import { syncAllRegions } from "../../services/realms.js";
 import { redis } from "../../lib/redis.js";
+import { getQueueSize } from "@waht/shared";
 
 // Routes debug — à supprimer avant la mise en production
 export async function debugRoutes(app: FastifyInstance) {
@@ -59,4 +60,9 @@ export async function debugRoutes(app: FastifyInstance) {
       return reply.send({ status: response.status, data });
     },
   );
+
+  app.get("/debug/enrich-queue", async (request, reply) => {
+    const size = await getQueueSize(redis);
+    return reply.send({ pendingItems: size });
+  });
 }

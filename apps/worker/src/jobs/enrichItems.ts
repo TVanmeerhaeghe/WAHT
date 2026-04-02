@@ -5,13 +5,16 @@ import {
   checkRateLimit,
   withRetry,
   BlizzardItem,
+  popItemsFromQueue,
+  getQueueSize,
+  pushItemsToQueue,
 } from "@waht/shared";
 import { prisma } from "../lib/prisma.js";
 import { redis } from "../lib/redis.js";
 
 type ItemQuality = "COMMON" | "UNCOMMON" | "RARE" | "EPIC" | "LEGENDARY";
 
-const BATCH_SIZE = 100;
+const BATCH_SIZE = 50;
 const REFERENCE_REGION: Region = "eu";
 
 async function fetchItemDetails(
@@ -51,13 +54,10 @@ async function fetchItemIconUrl(
     const response = await fetch(mediaHref, {
       headers: { Authorization: `Bearer ${token}` },
     });
-
     if (!response.ok) return null;
-
     const data = (await response.json()) as {
       assets: { key: string; value: string }[];
     };
-
     return data.assets.find((a) => a.key === "icon")?.value ?? null;
   } catch {
     return null;
@@ -77,33 +77,32 @@ function mapQuality(blizzardQuality: string): ItemQuality {
 }
 
 export async function enrichItems(): Promise<void> {
-  console.log(`[${new Date().toISOString()}] Starting item enrichment`);
+  const queueSize = await getQueueSize(redis);
 
-  const unenrichedItems = await prisma.item.findMany({
-    where: { name: { startsWith: "Item #" } },
-    select: { id: true },
-    take: BATCH_SIZE,
-    orderBy: { id: "desc" },
-  });
-
-  if (unenrichedItems.length === 0) {
-    console.log("All items are enriched!");
+  if (queueSize === 0) {
+    console.log("Item enrichment queue is empty");
     return;
   }
 
-  console.log(`Enriching ${unenrichedItems.length} items...`);
+  console.log(
+    `[${new Date().toISOString()}] Enriching items from queue (${queueSize} pending)`,
+  );
+
+  const itemIds = await popItemsFromQueue(redis, BATCH_SIZE);
+
+  if (itemIds.length === 0) return;
 
   const token = await getClientToken(REFERENCE_REGION);
   let enriched = 0;
   let failed = 0;
 
-  for (const item of unenrichedItems) {
-    const details = await fetchItemDetails(item.id, token);
+  for (const itemId of itemIds) {
+    const details = await fetchItemDetails(itemId, token);
 
     if (!details) {
       await prisma.item.update({
-        where: { id: item.id },
-        data: { name: `Unknown Item ${item.id}` },
+        where: { id: itemId },
+        data: { name: `Unknown Item ${itemId}` },
       });
       failed++;
       continue;
@@ -112,7 +111,7 @@ export async function enrichItems(): Promise<void> {
     const iconUrl = await fetchItemIconUrl(details.media.key.href, token);
 
     await prisma.item.update({
-      where: { id: item.id },
+      where: { id: itemId },
       data: {
         name: details.name.en_US,
         quality: mapQuality(details.quality.type),
@@ -123,7 +122,28 @@ export async function enrichItems(): Promise<void> {
     enriched++;
   }
 
+  const remaining = await getQueueSize(redis);
   console.log(
-    `[${new Date().toISOString()}] Enrichment complete: ${enriched} enriched, ${failed} not found`,
+    `[${new Date().toISOString()}] Enrichment batch complete: ${enriched} enriched, ${failed} not found, ${remaining} remaining in queue`,
+  );
+}
+
+export async function backfillEnrichQueue(): Promise<void> {
+  const unenrichedItems = await prisma.item.findMany({
+    where: { name: { startsWith: "Item #" } },
+    select: { id: true },
+  });
+
+  if (unenrichedItems.length === 0) {
+    console.log("No items to backfill");
+    return;
+  }
+
+  await pushItemsToQueue(
+    redis,
+    unenrichedItems.map((i: { id: number }) => i.id),
+  );
+  console.log(
+    `Backfilled ${unenrichedItems.length} items into enrichment queue`,
   );
 }

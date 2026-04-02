@@ -6,6 +6,7 @@ import {
   getClientToken,
   checkRateLimit,
   withRetry,
+  pushItemsToQueue,
 } from "@waht/shared";
 import { prisma } from "../lib/prisma.js";
 import { redis } from "../lib/redis.js";
@@ -53,9 +54,9 @@ async function fetchAuctionsForRealm(
 async function ensureItemsExist(itemIds: number[]): Promise<void> {
   const uniqueIds = [...new Set(itemIds)];
 
-  const existing = await prisma.realm.findMany({
+  const existing = await prisma.item.findMany({
     where: { id: { in: uniqueIds } },
-    select: { id: true, name: true, connectedRealms: true },
+    select: { id: true },
   });
 
   const existingIds = new Set(existing.map((i: { id: number }) => i.id));
@@ -71,6 +72,8 @@ async function ensureItemsExist(itemIds: number[]): Promise<void> {
     })),
     skipDuplicates: true,
   });
+
+  await pushItemsToQueue(redis, missingIds);
 }
 
 async function processAuctions(

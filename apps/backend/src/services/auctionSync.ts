@@ -6,6 +6,7 @@ import {
   getClientToken,
   checkRateLimit,
   withRetry,
+  pushItemsToQueue,
 } from "@waht/shared";
 
 const ON_DEMAND_SYNC_TTL = 60 * 5;
@@ -39,6 +40,8 @@ async function ensureItemsExist(itemIds: number[]): Promise<void> {
     })),
     skipDuplicates: true,
   });
+
+  await pushItemsToQueue(redis, missingIds);
 }
 
 export async function syncRealmOnDemand(
