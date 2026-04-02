@@ -1,0 +1,112 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-bg: #02000A;
+    --color-surface: #120632;
+    --color-border: rgba(174, 119, 213, 0.2);
+    --color-accent: #AF77D5;
+    --color-accent-bright: #E2A8FE;
+    --color-gold: #f8b700;
+  }
+
+  html {
+    @apply bg-void text-gray-100;
+    font-family: 'DM Sans', system-ui, sans-serif;
+  }
+
+  * {
+    @apply border-arcane;
+  }
+
+  /* Scrollbar stylisée */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #02000A;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #2E165B;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #7E4EAC;
+  }
+}
+
+@layer components {
+  /* Card de base */
+  .card {
+    @apply bg-card-gradient border border-arcane rounded-2xl shadow-card
+           backdrop-blur-sm transition-all duration-300;
+  }
+
+  .card:hover {
+    @apply border-arcane-bright shadow-arcane;
+  }
+
+  /* Bouton principal */
+  .btn-primary {
+    @apply bg-arcane-200 hover:bg-arcane-100 text-white font-medium
+           px-5 py-2.5 rounded-xl transition-all duration-200
+           shadow-arcane hover:shadow-glow;
+  }
+
+  /* Bouton gold */
+  .btn-gold {
+    @apply bg-gold hover:bg-gold-light text-void font-semibold
+           px-5 py-2.5 rounded-xl transition-all duration-200;
+  }
+
+  /* Input */
+  .input {
+    @apply bg-void-100 border border-arcane rounded-xl px-4 py-2.5
+           text-gray-100 placeholder-gray-500 outline-none
+           focus:border-arcane-bright focus:shadow-arcane
+           transition-all duration-200;
+  }
+
+  /* Badge qualité */
+  .badge-common    { @apply text-quality-common; }
+  .badge-uncommon  { @apply text-quality-uncommon; }
+  .badge-rare      { @apply text-quality-rare; }
+  .badge-epic      { @apply text-quality-epic; }
+  .badge-legendary { @apply text-quality-legendary; }
+
+  /* Effet glow derrière les éléments */
+  .glow-effect::before {
+    content: '';
+    @apply absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-500;
+    background: radial-gradient(ellipse at center, rgba(174, 119, 213, 0.1) 0%, transparent 70%);
+  }
+
+  .glow-effect:hover::before {
+    @apply opacity-100;
+  }
+}
+
+@layer utilities {
+  /* Texte gradient */
+  .text-gradient {
+    background: linear-gradient(135deg, #E2A8FE 0%, #AF77D5 50%, #7E4EAC 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-gold {
+    background: linear-gradient(135deg, #ffd700 0%, #f8b700 50%, #c47700 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Grid background */
+  .bg-grid {
+    background-image: var(--tw-gradient-stops);
+    background-size: 40px 40px;
+  }
+}
