@@ -56,24 +56,37 @@ async function ensureItemsExist(itemIds: number[]): Promise<void> {
 
   const existing = await prisma.item.findMany({
     where: { id: { in: uniqueIds } },
-    select: { id: true },
+    select: { id: true, name: true },
   });
 
   const existingIds = new Set(existing.map((i: { id: number }) => i.id));
+  const enrichedIds = new Set(
+    existing
+      .filter((i: { id: number; name: string }) => !i.name.startsWith("Item #"))
+      .map((i: { id: number }) => i.id),
+  );
+
   const missingIds = uniqueIds.filter((id) => !existingIds.has(id));
+  const unenrichedIds = uniqueIds.filter(
+    (id) => existingIds.has(id) && !enrichedIds.has(id),
+  );
 
-  if (missingIds.length === 0) return;
+  if (missingIds.length > 0) {
+    await prisma.item.createMany({
+      data: missingIds.map((id) => ({
+        id,
+        name: `Item #${id}`,
+        quality: "COMMON",
+      })),
+      skipDuplicates: true,
+    });
 
-  await prisma.item.createMany({
-    data: missingIds.map((id) => ({
-      id,
-      name: `Item #${id}`,
-      quality: "COMMON",
-    })),
-    skipDuplicates: true,
-  });
+    await pushItemsToQueue(redis, missingIds);
+  }
 
-  await pushItemsToQueue(redis, missingIds);
+  if (unenrichedIds.length > 0) {
+    await pushItemsToQueue(redis, unenrichedIds);
+  }
 }
 
 async function processAuctions(

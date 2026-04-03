@@ -14,7 +14,7 @@ import { redis } from "../lib/redis.js";
 
 type ItemQuality = "COMMON" | "UNCOMMON" | "RARE" | "EPIC" | "LEGENDARY";
 
-const BATCH_SIZE = 50;
+const BATCH_SIZE = 200;
 const REFERENCE_REGION: Region = "eu";
 
 async function fetchItemDetails(
@@ -98,6 +98,7 @@ export async function enrichItems(): Promise<void> {
 
   for (const itemId of itemIds) {
     const details = await fetchItemDetails(itemId, token);
+    console.log(`Item ${itemId}: ${details ? details.name : "NOT FOUND"}`);
 
     if (!details) {
       await prisma.item.update({
@@ -113,7 +114,7 @@ export async function enrichItems(): Promise<void> {
     await prisma.item.update({
       where: { id: itemId },
       data: {
-        name: details.name.en_US,
+        name: details.name,
         quality: mapQuality(details.quality.type),
         iconUrl,
       },
@@ -130,7 +131,10 @@ export async function enrichItems(): Promise<void> {
 
 export async function backfillEnrichQueue(): Promise<void> {
   const unenrichedItems = await prisma.item.findMany({
-    where: { name: { startsWith: "Item #" } },
+    where: {
+      name: { startsWith: "Item #" },
+      id: { gte: 1000, lte: 230000 },
+    },
     select: { id: true },
   });
 

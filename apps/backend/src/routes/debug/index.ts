@@ -65,4 +65,22 @@ export async function debugRoutes(app: FastifyInstance) {
     const size = await getQueueSize(redis);
     return reply.send({ pendingItems: size });
   });
+
+  app.get<{ Params: { id: string } }>(
+    "/debug/item-search/:id",
+    async (request, reply) => {
+      const { getClientToken } = await import("@waht/shared");
+      const token = await getClientToken("eu");
+
+      // Essai avec search API au lieu de l'endpoint direct
+      const response = await fetch(
+        `https://eu.api.blizzard.com/data/wow/search/item?namespace=static-eu&id=${request.params.id}&locale=en_US`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      return reply.send({
+        status: response.status,
+        data: await response.json(),
+      });
+    },
+  );
 }

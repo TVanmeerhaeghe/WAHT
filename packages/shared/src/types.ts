@@ -1,6 +1,6 @@
 export interface BlizzardItem {
   id: number;
-  name: { en_US: string };
+  name: string;
   quality: { type: string };
   media: { key: { href: string } };
 }
