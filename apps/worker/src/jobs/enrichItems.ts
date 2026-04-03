@@ -98,7 +98,6 @@ export async function enrichItems(): Promise<void> {
 
   for (const itemId of itemIds) {
     const details = await fetchItemDetails(itemId, token);
-    console.log(`Item ${itemId}: ${details ? details.name : "NOT FOUND"}`);
 
     if (!details) {
       await prisma.item.update({
