@@ -41,9 +41,51 @@
           </NuxtLink>
         </nav>
 
-        <!-- Actions -->
+        <!-- Auth -->
         <div class="flex items-center gap-3">
-          <button class="btn-primary text-sm">Connect Battle.net</button>
+          <!-- Connecté -->
+          <div v-if="user" class="flex items-center gap-3">
+            <NuxtLink
+              to="/dashboard"
+              class="flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all hover:bg-arcane-300/20"
+            >
+              <div
+                class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"
+                style="background: linear-gradient(135deg, #7e4eac, #532d84)"
+              >
+                {{ user.battletag[0] }}
+              </div>
+              <span class="text-sm text-gray-300 hidden sm:block">{{
+                user.battletag
+              }}</span>
+            </NuxtLink>
+            <button
+              class="text-gray-500 hover:text-red-400 transition-colors text-sm"
+              @click="logout"
+            >
+              Logout
+            </button>
+          </div>
+
+          <!-- Non connecté -->
+          <div v-else class="flex items-center gap-2">
+            <button
+              class="text-gray-400 hover:text-white text-sm transition-colors"
+              @click="login('eu')"
+            >
+              EU
+            </button>
+            <span class="text-gray-700">|</span>
+            <button
+              class="text-gray-400 hover:text-white text-sm transition-colors"
+              @click="login('us')"
+            >
+              US
+            </button>
+            <button class="btn-primary text-sm ml-2" @click="login('eu')">
+              Connect Battle.net
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -51,6 +93,8 @@
 </template>
 
 <script setup lang="ts">
+const { user, login, logout } = useAuth();
+
 const navItems = [
   { label: "Search", path: "/search" },
   { label: "Realms", path: "/realms" },
