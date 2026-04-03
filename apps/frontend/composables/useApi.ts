@@ -66,5 +66,14 @@ export function useApi() {
     }>(`${baseUrl}/items/${itemId}/prices?${query}`);
   }
 
-  return { searchItems, getRealms, getItemPrices };
+  async function getItem(itemId: number) {
+    return $fetch<{
+      id: number;
+      name: string;
+      quality: string;
+      iconUrl: string | null;
+    }>(`${baseUrl}/items/${itemId}`);
+  }
+
+  return { searchItems, getRealms, getItemPrices, getItem };
 }

@@ -67,4 +67,19 @@ export async function itemsRoutes(app: FastifyInstance) {
 
     return reply.send(result);
   });
+
+  app.get<{ Params: { id: string } }>("/items/:id", async (request, reply) => {
+    const itemId = parseInt(request.params.id);
+    if (isNaN(itemId))
+      return reply.status(400).send({ error: "Invalid item ID" });
+
+    const item = await prisma.item.findUnique({
+      where: { id: itemId },
+      select: { id: true, name: true, quality: true, iconUrl: true },
+    });
+
+    if (!item) return reply.status(404).send({ error: "Item not found" });
+
+    return reply.send(item);
+  });
 }
