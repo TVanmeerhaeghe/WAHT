@@ -154,9 +154,7 @@
         </div>
 
         <div v-else class="h-64">
-          <ClientOnly>
-            <Line :data="chartData" :options="chartOptions" />
-          </ClientOnly>
+          <Line v-if="isMounted" :data="chartData" :options="chartOptions" />
         </div>
       </UiCard>
     </div>
@@ -165,7 +163,33 @@
 
 <script setup lang="ts">
 import { Line } from "vue-chartjs";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+} from "chart.js";
 
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+);
+
+const isMounted = ref(false);
+onMounted(() => {
+  isMounted.value = true;
+});
 const route = useRoute();
 const { searchItems, getRealms, getItemPrices } = useApi();
 
@@ -202,8 +226,13 @@ const realmsByRegion = computed(() => {
 });
 
 // Charge les prix
+const pricesKey = computed(
+  () =>
+    `item-prices-${itemId.value}-${selectedRealm.value}-${selectedPeriod.value}`,
+);
+
 const { data: pricesData, pending: pricesPending } = await useAsyncData(
-  `item-prices-${itemId.value}-${selectedRealm.value}-${selectedPeriod.value}`,
+  pricesKey.value,
   () =>
     getItemPrices(itemId.value, {
       realm: selectedRealm.value || undefined,
