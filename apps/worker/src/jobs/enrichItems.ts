@@ -14,7 +14,7 @@ import { redis } from "../lib/redis.js";
 
 type ItemQuality = "COMMON" | "UNCOMMON" | "RARE" | "EPIC" | "LEGENDARY";
 
-const BATCH_SIZE = 200;
+const BATCH_SIZE = 500;
 const REFERENCE_REGION: Region = "eu";
 
 async function fetchItemDetails(

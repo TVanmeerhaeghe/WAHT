@@ -11,8 +11,8 @@ cron.schedule("0 * * * *", async () => {
   await purgeOldAuctions();
 });
 
-// Enrichissement toutes les 5 minutes
-cron.schedule("*/5 * * * *", async () => {
+// Enrichissement toutes les 2 minutes
+cron.schedule("*/2 * * * *", async () => {
   await enrichItems();
 });
 

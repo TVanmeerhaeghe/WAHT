@@ -28,7 +28,13 @@ export async function itemsRoutes(app: FastifyInstance) {
     }
 
     const where = q
-      ? { name: { contains: q, mode: "insensitive" as const } }
+      ? {
+          name: { contains: q, mode: "insensitive" as const },
+          NOT: [
+            { name: { startsWith: "Item #" } },
+            { name: { startsWith: "Unknown Item" } },
+          ],
+        }
       : {};
 
     const [items, total] = await Promise.all([
