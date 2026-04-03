@@ -75,5 +75,13 @@ export function useApi() {
     }>(`${baseUrl}/items/${itemId}`);
   }
 
-  return { searchItems, getRealms, getItemPrices, getItem };
+  async function getStats() {
+    return $fetch<{
+      itemCount: number;
+      realmCount: number;
+      auctionCount: number;
+    }>(`${baseUrl}/items/stats`);
+  }
+
+  return { searchItems, getRealms, getItemPrices, getItem, getStats };
 }

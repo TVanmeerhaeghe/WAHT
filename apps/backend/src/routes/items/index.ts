@@ -82,4 +82,21 @@ export async function itemsRoutes(app: FastifyInstance) {
 
     return reply.send(item);
   });
+
+  app.get("/items/stats", async (request, reply) => {
+    const [itemCount, realmCount, auctionCount] = await Promise.all([
+      prisma.item.count({
+        where: {
+          NOT: [
+            { name: { startsWith: "Item #" } },
+            { name: { startsWith: "Unknown Item" } },
+          ],
+        },
+      }),
+      prisma.realm.count(),
+      prisma.rawAuction.count(),
+    ]);
+
+    return reply.send({ itemCount, realmCount, auctionCount });
+  });
 }

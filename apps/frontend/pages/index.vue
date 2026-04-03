@@ -103,22 +103,43 @@
 </template>
 
 <script setup lang="ts">
-const globalStats = [
-  { label: "Active Realms", value: "153", subtitle: "EU + US + KR" },
-  { label: "Items Tracked", value: "18k+", subtitle: "Updated hourly" },
-  { label: "Auctions Live", value: "2M+", subtitle: "Across all realms" },
-  { label: "Sync Interval", value: "1h", subtitle: "Blizzard API limit" },
-];
+const { getStats } = useApi();
+const { data: stats } = await useAsyncData("stats", () => getStats());
+
+const globalStats = computed(() => [
+  {
+    label: "Active Realms",
+    value: stats.value?.realmCount.toLocaleString() ?? "153",
+    subtitle: "EU + US + KR",
+  },
+  {
+    label: "Items Tracked",
+    value: stats.value?.itemCount.toLocaleString() ?? "—",
+    subtitle: "Enriched & searchable",
+  },
+  {
+    label: "Auctions Live",
+    value: stats.value
+      ? `${(stats.value.auctionCount / 1_000_000).toFixed(1)}M`
+      : "—",
+    subtitle: "Across all realms",
+  },
+  {
+    label: "Sync Interval",
+    value: "1h",
+    subtitle: "Blizzard API limit",
+  },
+]);
 
 const features = [
   {
-    icon: "���",
+    icon: "📈",
     title: "Price History",
     description:
       "Track price evolution over 7, 30 or 90 days with interactive charts.",
   },
   {
-    icon: "���",
+    icon: "🔍",
     title: "Live Search",
     description:
       "Search any item and get real-time prices across all connected realms.",
