@@ -54,7 +54,16 @@ export default tseslint.config(
     },
     plugins: { vue: pluginVue },
     rules: {
-      "vue/html-self-closing": "warn",
+      "vue/html-self-closing": [
+        "warn",
+        {
+          html: {
+            void: "never",
+            normal: "always",
+            component: "always",
+          },
+        },
+      ],
     },
   },
 
